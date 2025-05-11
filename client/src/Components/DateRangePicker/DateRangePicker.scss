@@ -1,0 +1,14 @@
+.dateRangePicker {
+  color: var(--text-color);
+  font-size: 24px;
+
+  .react-daterange-picker__wrapper {
+    border: none;
+    outline: none;
+  }
+
+  .calendar-icon {
+    font-size: 20px;
+    cursor: pointer;
+  }
+}
