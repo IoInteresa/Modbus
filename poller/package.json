@@ -11,7 +11,6 @@
   "description": "",
   "dependencies": {
     "dayjs": "^1.11.13",
-    "dotenv": "^16.5.0",
     "jsmodbus": "^4.0.10",
     "knex": "^3.1.0",
     "sqlite3": "^5.1.7"
