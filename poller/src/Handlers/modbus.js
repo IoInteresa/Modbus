@@ -1,25 +1,36 @@
+const net = require("net");
 const ModbusTCP = require("jsmodbus");
 
-const PLC_PORT = 502;
+const connectAndGetInputs = (plc) => {
+  return new Promise((resolve) => {
+    const socket = new net.Socket();
+    const client = new ModbusTCP.client.TCP(socket);
 
-const connectToPLC = async (ip) => {
-  try {
-    const socket = new ModbusTCP.client.TCP();
-    return socket.connect({ host: ip, port: PLC_PORT });
-  } catch (error) {
-    console.error(`Error connecting to PLC ${ip}: ${error.message}`);
-    return null;
-  }
+    socket.on("connect", () => {
+      client
+        .readDiscreteInputs(0, 6)
+        .then((resp) => {
+          resolve(resp.response._body.valuesAsArray);
+        })
+        .catch((err) => {
+          console.error("Error reading PLC inputs:", err.message);
+          resolve([]);
+        })
+        .finally(() => {
+          socket.end();
+        });
+    });
+
+    socket.on("error", (err) => {
+      // Не логирую — нет смысла вне рабочего времени.
+      resolve([]);
+    });
+
+    socket.connect({
+      host: plc.ip,
+      port: plc.port
+    });
+  });
 };
 
-const readPLCInputs = async (socket, startAddress = 0, count = 16) => {
-  try {
-    const result = await socket.readCoils(startAddress, count);
-    return result.response.body.valuesAsArray;
-  } catch (error) {
-    console.error(`Error reading PLC inputs: ${error.message}`);
-    return null;
-  }
-};
-
-module.exports = { connectToPLC, readPLCInputs };
+module.exports = { connectAndGetInputs };

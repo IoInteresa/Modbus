@@ -1,6 +1,5 @@
-const { connectToPLC, readPLCInputs } = require('./modbus');
+const { connectAndGetInputs } = require('./modbus');
 
 module.exports = {
-  connectToPLC,
-  readPLCInputs
+  connectAndGetInputs
 }

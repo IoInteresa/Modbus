@@ -1,71 +1,63 @@
 const dayjs = require("dayjs");
 
 const { plcDao, signalDao, signalCallsDao } = require("./Dao");
-const { connectToPLC, readPLCInputs } = require("./Handlers");
+const { connectAndGetInputs } = require("./Handlers");
 
 const start = async () => {
   try {
-    const plcs = await plcDao.getAll();
-    const signals = await signalDao.getAll();
+    const [plcs, signals] = await Promise.all([
+      plcDao.getAll(),
+      signalDao.getAll(),
+    ]);
 
     const today = dayjs().format("YYYY-MM-DD");
     const signalCalls = [];
 
-    for (const plc of plcs) {
-      const socket = await connectToPLC(plc.ip);
-      if (!socket) {
-        console.error(`PLC ${plc.ip} is not available`);
-        continue;
-      }
+    const plcInputsPromises = plcs.map((plc) => connectAndGetInputs(plc));
+    const plcInputsArray = await Promise.all(plcInputsPromises);
 
-      try {
-        const plcInputs = await readPLCInputs(socket);
-        if (!plcInputs) {
-          console.error(`PLC ${plc.ip} is not available`);
-          continue;
-        }
+    for (let i = 0; i < plcs.length; i++) {
+      const plcInputs = plcInputsArray[i];
 
-        for (const [index, value] of plcInputs.entries()) {
-          if (!value) continue; // отклоняем неактивные сигналы
+      for (const [index, value] of plcInputs.entries()) {
+        // отклоняем неактивные сигналы
+        if (!value) continue;
 
-          const signal = signals.find(
-            (s) => s.plcId === plc.id && s.plcInput === index + 1
-          );
+        const signal = signals.find(
+          (s) => s.plcId === plcs[i].id && s.plcInput === index + 1
+        );
 
-          if (!signal) continue; // Данный сигнал не прослушиваем
+        // Данный сигнал не прослушиваем
+        if (!signal) continue;
 
-          signalCalls.push({
-            signalId: signal.id,
-            date: today,
-          });
-        }
-      } catch (error) {
-        console.error("Error reading PLC inputs:", error);
-      } finally {
-        socket.close();
+        signalCalls.push({
+          signalId: signal.id,
+          date: today,
+        });
       }
     }
 
-    if (signalCalls.length) {
-      await signalCallsDao.add(signalCalls);
-    }
+    if (!signalCalls.length) return;
+
+    await signalCallsDao.add(signalCalls);
   } catch (error) {
     console.error("Error in start function:", error);
   }
 };
 
-const runWithRetry = async () => {
-  try {
-    await start();
-  } catch (error) {
-    setTimeout(runWithRetry, 5000);
-    console.error("Error in runWithRetry function:", error);
-  }
+const runStrictInterval = async () => {
+  const startTime = Date.now();
+
+  await start();
+
+  const elapsed = Date.now() - startTime;
+  const delay = Math.max(0, 1000 - elapsed);
+
+  setTimeout(runStrictInterval, delay);
 };
 
-const interval = setInterval(runWithRetry, 1000);
+runStrictInterval();
 
 process.on("SIGINT", () => {
-  clearInterval(interval);
   process.exit(0);
 });
