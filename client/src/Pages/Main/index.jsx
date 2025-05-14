@@ -16,7 +16,7 @@ const Main = observer(() => {
   useEffect(() => {
     const interval = setInterval(() => {
       machinesStore.fetchMachines();
-    }, 5000);
+    }, 20000);
 
     return () => clearInterval(interval);
   }, [machinesStore]);

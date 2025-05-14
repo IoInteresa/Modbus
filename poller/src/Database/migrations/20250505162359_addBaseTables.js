@@ -2,7 +2,9 @@ exports.up = function (knex) {
   return knex.schema
     .createTable("plcs", function (table) {
       table.increments("id").primary();
-      table.string("ip").notNullable().unique();
+      table.string("ip").notNullable();
+      table.integer("port").notNullable();
+      table.dateTime("blockUntil").nullable();
     })
     .createTable("machines", function (table) {
       table.increments("id").primary();
@@ -14,18 +16,31 @@ exports.up = function (knex) {
       table
         .integer("machineId")
         .unsigned()
+        .notNullable()
         .references("id")
-        .inTable("machines");
-      table.integer("plcId").unsigned().references("id").inTable("plcs");
+        .inTable("machines")
+        .onDelete("RESTRICT");
+      table
+        .integer("plcId")
+        .unsigned()
+        .notNullable()
+        .references("id")
+        .inTable("plcs")
+        .onDelete("RESTRICT");
       table.integer("plcInput").notNullable();
     })
     .createTable("signalCalls", function (table) {
-      table.integer("signalId").unsigned().references("id").inTable("signals");
-      table.integer("count").notNullable().defaultTo(1);
-      table.date("date").notNullable().defaultTo(knex.fn.now());
+      table
+        .integer("signalId")
+        .unsigned()
+        .notNullable()
+        .references("id")
+        .inTable("signals")
+        .onDelete("RESTRICT");
+      table.integer("count").notNullable().defaultTo(3);
+      table.date("date").notNullable().defaultTo(knex.raw("CURRENT_DATE"));
 
       table.primary(["signalId", "date"]);
-      table.unique(["signalId", "date"]);
     });
 };
 

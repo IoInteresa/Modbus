@@ -7,11 +7,11 @@ const signalCallsDao = {
         .insert(calls)
         .onConflict(["signalId", "date"])
         .merge({
-          count: db.raw('"signalCalls"."count" + 1'),
+          count: db.raw('"signalCalls"."count" + 3'),
         });
     } catch (error) {
       console.error("Error adding signal calls:", error);
-      return false;
+      return null;
     }
   },
 };

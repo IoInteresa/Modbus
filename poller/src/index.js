@@ -10,14 +10,23 @@ const start = async () => {
       signalDao.getAll(),
     ]);
 
-    const today = dayjs().format("YYYY-MM-DD");
+    if (!plcs.length || !signals.length) return;
+
     const signalCalls = [];
+    const plcIdsToBlock = [];
+    const today = dayjs().format("YYYY-MM-DD");
 
     const plcInputsPromises = plcs.map((plc) => connectAndGetInputs(plc));
     const plcInputsArray = await Promise.all(plcInputsPromises);
 
     for (let i = 0; i < plcs.length; i++) {
       const plcInputs = plcInputsArray[i];
+
+      // не удалось подключиться к plc
+      if (!plcInputs) {
+        plcIdsToBlock.push(plcs[i].id);
+        continue;
+      }
 
       for (const [index, value] of plcInputs.entries()) {
         // отклоняем неактивные сигналы
@@ -37,9 +46,17 @@ const start = async () => {
       }
     }
 
-    if (!signalCalls.length) return;
+    const actionsPromises = [];
 
-    await signalCallsDao.add(signalCalls);
+    if (plcIdsToBlock.length) {
+      actionsPromises.push(plcDao.blockPlcs(plcIdsToBlock));
+    }
+
+    if (signalCalls.length) {
+      actionsPromises.push(signalCallsDao.add(signalCalls));
+    }
+
+    await Promise.all(actionsPromises);
   } catch (error) {
     console.error("Error in start function:", error);
   }
@@ -51,7 +68,7 @@ const runStrictInterval = async () => {
   await start();
 
   const elapsed = Date.now() - startTime;
-  const delay = Math.max(0, 1000 - elapsed);
+  const delay = Math.max(0, 3000 - elapsed);
 
   setTimeout(runStrictInterval, delay);
 };

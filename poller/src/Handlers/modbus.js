@@ -14,7 +14,7 @@ const connectAndGetInputs = (plc) => {
         })
         .catch((err) => {
           console.error("Error reading PLC inputs:", err.message);
-          resolve([]);
+          resolve(false);
         })
         .finally(() => {
           socket.end();
@@ -22,14 +22,21 @@ const connectAndGetInputs = (plc) => {
     });
 
     socket.on("error", (err) => {
-      // Не логирую — нет смысла вне рабочего времени.
-      resolve([]);
+      resolve(false);
+      socket.destroy();
     });
 
-    socket.connect({
-      host: plc.ip,
-      port: plc.port
+    socket.on("timeout", () => {
+      resolve(false);
+      socket.destroy();
     });
+
+    socket.connect({ host: plc.ip, port: plc.port });
+
+    socket.setNoDelay(true);
+    socket.setKeepAlive(false);
+
+    socket.setTimeout(2500);
   });
 };
 
