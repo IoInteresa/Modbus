@@ -1,3 +1,5 @@
+process.env.TZ = 'Asia/Yekaterinburg';
+
 const dayjs = require("dayjs");
 
 const { plcDao, signalDao, signalCallsDao } = require("./Dao");
