@@ -4,7 +4,6 @@ exports.up = function (knex) {
       table.increments("id").primary();
       table.string("ip").notNullable();
       table.integer("port").notNullable();
-      table.dateTime("blockUntil").nullable();
     })
     .createTable("machines", function (table) {
       table.increments("id").primary();
@@ -37,8 +36,11 @@ exports.up = function (knex) {
         .references("id")
         .inTable("signals")
         .onDelete("RESTRICT");
-      table.integer("count").notNullable().defaultTo(3);
-      table.date("date").notNullable().defaultTo(knex.raw("CURRENT_DATE"));
+      table
+        .integer("count")
+        .notNullable()
+        .defaultTo(3);
+      table.date("date").notNullable()
 
       table.primary(["signalId", "date"]);
     });

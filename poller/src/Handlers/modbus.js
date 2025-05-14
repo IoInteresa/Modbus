@@ -14,7 +14,7 @@ const connectAndGetInputs = (plc) => {
         })
         .catch((err) => {
           console.error("Error reading PLC inputs:", err.message);
-          resolve(false);
+          resolve([]);
         })
         .finally(() => {
           socket.end();
@@ -22,12 +22,12 @@ const connectAndGetInputs = (plc) => {
     });
 
     socket.on("error", (err) => {
-      resolve(false);
+      resolve([]);
       socket.destroy();
     });
 
     socket.on("timeout", () => {
-      resolve(false);
+      resolve([]);
       socket.destroy();
     });
 

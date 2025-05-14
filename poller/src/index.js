@@ -1,9 +1,5 @@
-process.env.TZ = 'Asia/Yekaterinburg';
-
-const dayjs = require("dayjs");
-
 const { plcDao, signalDao, signalCallsDao } = require("./Dao");
-const { connectAndGetInputs } = require("./Handlers");
+const { connectAndGetInputs, dayInUTC5 } = require("./Handlers");
 
 const start = async () => {
   try {
@@ -15,20 +11,12 @@ const start = async () => {
     if (!plcs.length || !signals.length) return;
 
     const signalCalls = [];
-    const plcIdsToBlock = [];
-    const today = dayjs().format("YYYY-MM-DD");
 
     const plcInputsPromises = plcs.map((plc) => connectAndGetInputs(plc));
     const plcInputsArray = await Promise.all(plcInputsPromises);
 
     for (let i = 0; i < plcs.length; i++) {
       const plcInputs = plcInputsArray[i];
-
-      // не удалось подключиться к plc
-      if (!plcInputs) {
-        plcIdsToBlock.push(plcs[i].id);
-        continue;
-      }
 
       for (const [index, value] of plcInputs.entries()) {
         // отклоняем неактивные сигналы
@@ -43,22 +31,14 @@ const start = async () => {
 
         signalCalls.push({
           signalId: signal.id,
-          date: today,
+          date: dayInUTC5,
         });
       }
     }
 
-    const actionsPromises = [];
+    if (!signalCalls.length) return;
 
-    if (plcIdsToBlock.length) {
-      actionsPromises.push(plcDao.blockPlcs(plcIdsToBlock));
-    }
-
-    if (signalCalls.length) {
-      actionsPromises.push(signalCallsDao.add(signalCalls));
-    }
-
-    await Promise.all(actionsPromises);
+    await signalCallsDao.add(signalCalls);
   } catch (error) {
     console.error("Error in start function:", error);
   }
