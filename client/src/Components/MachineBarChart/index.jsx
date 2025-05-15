@@ -4,28 +4,30 @@ import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Legend } from "recharts";
 import "./MachineBarChart.scss";
 
 const MachineBarChart = ({ machine }) => {
+  const { running, idle, fault } = machine;
+
   const chartData = [
     {
       name: machine.name,
-      running: machine.running.raw,
-      idle: machine.idle.raw,
-      fault: machine.fault.raw,
+      running: running.raw,
+      idle: idle.raw,
+      fault: fault.raw,
     },
   ];
 
   const legendPayload = [
     {
-      value: `Работа: ${machine.running.formatted}`,
+      value: `Работа: ${running.formatted} (${running.percent}%)`,
       type: "rect",
       color: "#4CAF50",
     },
     {
-      value: `Простой: ${machine.idle.formatted}`,
+      value: `Простой: ${idle.formatted} (${idle.percent}%)`,
       type: "rect",
       color: "#FFC107",
     },
     {
-      value: `Авария: ${machine.fault.formatted}`,
+      value: `Авария: ${fault.formatted} (${fault.percent}%)`,
       type: "rect",
       color: "#FF5722",
     },
@@ -52,7 +54,6 @@ const MachineBarChart = ({ machine }) => {
         <Legend
           payload={legendPayload}
           wrapperStyle={{
-            paddingTop: "5px",
             paddingLeft: "70px",
           }}
         />
@@ -70,14 +71,17 @@ MachineBarChart.propTypes = {
     running: PropTypes.shape({
       raw: PropTypes.number.isRequired,
       formatted: PropTypes.string.isRequired,
+      percent: PropTypes.number.isRequired,
     }).isRequired,
     idle: PropTypes.shape({
       raw: PropTypes.number.isRequired,
       formatted: PropTypes.string.isRequired,
+      percent: PropTypes.number.isRequired,
     }).isRequired,
     fault: PropTypes.shape({
       raw: PropTypes.number.isRequired,
       formatted: PropTypes.string.isRequired,
+      percent: PropTypes.number.isRequired,
     }).isRequired,
     timeUnitLabel: PropTypes.string.isRequired,
   }).isRequired,
