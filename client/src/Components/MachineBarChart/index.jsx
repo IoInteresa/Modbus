@@ -4,7 +4,7 @@ import { BarChart, Bar, CartesianGrid, XAxis, YAxis, Legend } from "recharts";
 import "./MachineBarChart.scss";
 
 const MachineBarChart = ({ machine }) => {
-  const { running, idle, fault } = machine;
+  const { running, idle, fault, off } = machine;
 
   const chartData = [
     {
@@ -12,17 +12,18 @@ const MachineBarChart = ({ machine }) => {
       running: running.raw,
       idle: idle.raw,
       fault: fault.raw,
+      off: off.raw,
     },
   ];
 
   const legendPayload = [
     {
-      value: `Работа: ${running.formatted} (${running.percent}%)`,
+      value: `Работает: ${running.formatted} (${running.percent}%)`,
       type: "rect",
       color: "#4CAF50",
     },
     {
-      value: `Простой: ${idle.formatted} (${idle.percent}%)`,
+      value: `Ожидание: ${idle.formatted} (${idle.percent}%)`,
       type: "rect",
       color: "#FFC107",
     },
@@ -30,6 +31,11 @@ const MachineBarChart = ({ machine }) => {
       value: `Авария: ${fault.formatted} (${fault.percent}%)`,
       type: "rect",
       color: "#FF5722",
+    },
+    {
+      value: `Выключен: ${off.formatted} (${off.percent}%)`,
+      type: "rect",
+      color: "#9E9E9E",
     },
   ];
 
@@ -60,6 +66,7 @@ const MachineBarChart = ({ machine }) => {
         <Bar dataKey="running" name="running" fill="#4CAF50" />
         <Bar dataKey="idle" name="idle" fill="#FFC107" />
         <Bar dataKey="fault" name="fault" fill="#FF5722" />
+        <Bar dataKey="off" name="off" fill="#9E9E9E" />
       </BarChart>
     </div>
   );
@@ -79,6 +86,11 @@ MachineBarChart.propTypes = {
       percent: PropTypes.number.isRequired,
     }).isRequired,
     fault: PropTypes.shape({
+      raw: PropTypes.number.isRequired,
+      formatted: PropTypes.string.isRequired,
+      percent: PropTypes.number.isRequired,
+    }).isRequired,
+    off: PropTypes.shape({
       raw: PropTypes.number.isRequired,
       formatted: PropTypes.string.isRequired,
       percent: PropTypes.number.isRequired,

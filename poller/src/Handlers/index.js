@@ -1,7 +1,8 @@
-const { connectAndGetInputs } = require("./modbus");
-const { dayInUTC5 } = require("./time");
+const { connectAndGetInputs, getDiscreteInputsRange } = require("./modbus");
+const { getUTC5Date } = require("./time");
 
 module.exports = {
   connectAndGetInputs,
-  dayInUTC5,
+  getDiscreteInputsRange,
+  getUTC5Date,
 };

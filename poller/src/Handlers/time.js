@@ -1,12 +1,12 @@
-const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
-const timezone = require("dayjs/plugin/timezone");
+const HOUR_IN_MILLISECONDS = 60 * 60 * 1000;
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
+const getUTC5Date = () => {
+  const nowUtc = new Date();
+  const utc5 = new Date(nowUtc.getTime() + 5 * HOUR_IN_MILLISECONDS);
 
-const dayInUTC5 = dayjs().tz("Asia/Yekaterinburg").format("YYYY-MM-DD");
+  return utc5.toISOString().split("T")[0];
+};
 
 module.exports = {
-  dayInUTC5,
+  getUTC5Date,
 };

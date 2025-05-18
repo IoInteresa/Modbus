@@ -51,10 +51,12 @@ class MachinesStore {
       const maxRawValue = Math.max(
         machine.running,
         machine.idle,
-        machine.fault
+        machine.fault,
+        machine.off
       );
 
-      const totalValue = machine.running + machine.idle + machine.fault;
+      const totalValue =
+        machine.running + machine.idle + machine.fault + machine.off;
 
       const timeUnitLabel =
         unitKeys.find((key) => maxRawValue < TIME_UNITS[key] * 60) || "Дни";
@@ -65,17 +67,23 @@ class MachinesStore {
         running: {
           raw: machine.running / TIME_UNITS[timeUnitLabel],
           formatted: formatSecondsToTime(machine.running),
-          percent: Number((machine.running / totalValue * 100).toFixed(1))
+          percent:
+            Number(((machine.running / totalValue) * 100).toFixed(1)) || 0,
         },
         idle: {
           raw: machine.idle / TIME_UNITS[timeUnitLabel],
           formatted: formatSecondsToTime(machine.idle),
-          percent: Number((machine.idle / totalValue * 100).toFixed(1))
+          percent: Number(((machine.idle / totalValue) * 100).toFixed(1)) || 0,
         },
         fault: {
           raw: machine.fault / TIME_UNITS[timeUnitLabel],
           formatted: formatSecondsToTime(machine.fault),
-          percent: Number((machine.fault / totalValue * 100).toFixed(1))
+          percent: Number(((machine.fault / totalValue) * 100).toFixed(1)) || 0,
+        },
+        off: {
+          raw: machine.off / TIME_UNITS[timeUnitLabel],
+          formatted: formatSecondsToTime(machine.off),
+          percent: Number(((machine.off / totalValue) * 100).toFixed(1)) || 0,
         },
       };
     });

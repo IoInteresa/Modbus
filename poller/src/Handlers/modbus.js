@@ -1,22 +1,22 @@
 const net = require("net");
 const ModbusTCP = require("jsmodbus");
 
-const connectAndGetInputs = (plc) => {
+const connectAndGetInputs = (plc, address) => {
   return new Promise((resolve) => {
     const socket = new net.Socket();
     const client = new ModbusTCP.client.TCP(socket);
 
     socket.on("connect", () => {
       client
-        .readDiscreteInputs(0, 6)
-        .then((resp) => {
-          resolve(resp.response._body.valuesAsArray);
-        })
-        .catch((err) => {
-          console.error("Error reading PLC inputs:", err.message);
-          resolve([]);
-        })
-        .finally(() => {
+      .readDiscreteInputs(address.start - 1, address.count)
+      .then((resp) => {
+        resolve(resp.response._body.valuesAsArray);
+      })
+      .catch((err) => {
+        console.error("Error reading PLC inputs:", err.message);
+        resolve([]);
+      })
+      .finally(() => {
           socket.end();
         });
     });
@@ -36,8 +36,23 @@ const connectAndGetInputs = (plc) => {
     socket.setNoDelay(true);
     socket.setKeepAlive(false);
 
-    socket.setTimeout(2500);
+    socket.setTimeout(2200);
   });
 };
 
-module.exports = { connectAndGetInputs };
+
+const getDiscreteInputsRange = (plcId, signals) => {
+  const inputs = signals
+    .filter((signal) => signal.plcId === plcId)
+    .map((signal) => signal.plcInput);
+
+  const min = Math.min(...inputs);
+  const max = Math.max(...inputs);
+
+  return {
+    start: min,
+    count: max - min + 1,
+  };
+};
+
+module.exports = { connectAndGetInputs, getDiscreteInputsRange };

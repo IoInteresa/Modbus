@@ -14,7 +14,10 @@ const statsDao = {
         `),
           db.raw(`
           COALESCE(SUM(CASE WHEN s.name = 'fault' THEN sc.count ELSE 0 END), 0) AS fault
-        `)
+        `),
+          db.raw(`
+          COALESCE(SUM(CASE WHEN s.name = 'off' THEN sc.count ELSE 0 END), 0) AS off
+        `),
         )
         .join("signals as s", "s.machineId", "m.id")
         .leftJoin("signalCalls as sc", (qb) =>

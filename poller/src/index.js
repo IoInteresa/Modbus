@@ -1,5 +1,9 @@
 const { plcDao, signalDao, signalCallsDao } = require("./Dao");
-const { connectAndGetInputs, dayInUTC5 } = require("./Handlers");
+const {
+  connectAndGetInputs,
+  getDiscreteInputsRange,
+  getUTC5Date,
+} = require("./Handlers");
 
 const start = async () => {
   try {
@@ -12,26 +16,48 @@ const start = async () => {
 
     const signalCalls = [];
 
-    const plcInputsPromises = plcs.map((plc) => connectAndGetInputs(plc));
-    const plcInputsArray = await Promise.all(plcInputsPromises);
+    const plcInputJobs = plcs.map((plc) => {
+      const address = getDiscreteInputsRange(plc.id, signals);
 
-    for (let i = 0; i < plcs.length; i++) {
+      return {
+        plc,
+        address,
+        promise: connectAndGetInputs(plc, address),
+      };
+    });
+
+    const plcInputsArray = await Promise.all(
+      plcInputJobs.map((job) => job.promise)
+    );
+
+    for (let i = 0; i < plcInputJobs.length; i++) {
+      const { plc, address } = plcInputJobs[i];
       const plcInputs = plcInputsArray[i];
+
+      if (!plcInputs.length) continue;
+
+      // Фильтруем сигналы, оставляя только те, которые принадлежат данному plc и к инпут выводу
+      // кейс 3088, 3089, 3091, 3092 - 3090 не обрабатывается
+      const inputMap = signals.reduce((map, signal) => {
+        if (signal.plcId === plc.id) {
+          map[signal.plcInput - address.start] = signal;
+        }
+
+        return map;
+      }, {});
 
       for (const [index, value] of plcInputs.entries()) {
         // отклоняем неактивные сигналы
         if (!value) continue;
 
-        const signal = signals.find(
-          (s) => s.plcId === plcs[i].id && s.plcInput === index + 1
-        );
+        const signal = inputMap[index];
 
-        // Данный сигнал не прослушиваем
+        // Данный сигнал(вход) не прослушиваем
         if (!signal) continue;
 
         signalCalls.push({
           signalId: signal.id,
-          date: dayInUTC5,
+          date: getUTC5Date(),
         });
       }
     }
