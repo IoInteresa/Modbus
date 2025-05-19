@@ -8,7 +8,7 @@ const connectAndGetInputs = (plc, address) => {
 
     socket.on("connect", () => {
       client
-      .readDiscreteInputs(address.start - 1, address.count)
+      .readDiscreteInputs(address.start, address.count)
       .then((resp) => {
         resolve(resp.response._body.valuesAsArray);
       })
