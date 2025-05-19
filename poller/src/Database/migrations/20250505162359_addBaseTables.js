@@ -37,9 +37,13 @@ exports.up = function (knex) {
         .inTable("signals")
         .onDelete("RESTRICT");
       table
-        .integer("count")
+        .integer("shift_sec")
         .notNullable()
-        .defaultTo(3);
+        .defaultTo(0);
+      table
+        .integer("day_sec")
+        .notNullable()
+        .defaultTo(0);
       table.date("date").notNullable()
 
       table.primary(["signalId", "date"]);

@@ -2,7 +2,7 @@ const { plcDao, signalDao, signalCallsDao } = require("./Dao");
 const {
   connectAndGetInputs,
   getDiscreteInputsRange,
-  getUTC5Date,
+  getUTC5DateAndIsWorkTime,
 } = require("./Handlers");
 
 const start = async () => {
@@ -29,6 +29,8 @@ const start = async () => {
     const plcInputsArray = await Promise.all(
       plcInputJobs.map((job) => job.promise)
     );
+
+    const { date, isWorkTime } = getUTC5DateAndIsWorkTime();
 
     for (let i = 0; i < plcInputJobs.length; i++) {
       const { plc, address } = plcInputJobs[i];
@@ -57,14 +59,16 @@ const start = async () => {
 
         signalCalls.push({
           signalId: signal.id,
-          date: getUTC5Date(),
+          date,
+          // лишь для первой вставки
+          [isWorkTime ? "shift_sec" : "day_sec"]: 3,
         });
       }
     }
 
     if (!signalCalls.length) return;
 
-    await signalCallsDao.add(signalCalls);
+    await signalCallsDao.add(signalCalls, isWorkTime);
   } catch (error) {
     console.error("Error in start function:", error);
   }

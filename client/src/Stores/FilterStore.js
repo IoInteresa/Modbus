@@ -1,6 +1,6 @@
 import { makeObservable, observable, action, reaction } from "mobx";
 
-import { PERIODS } from "../Consts";
+import { PERIODS, WORKING_TYPES } from "../Consts";
 import { getDateRanges } from "../Utils";
 
 class FilterStore {
@@ -9,14 +9,17 @@ class FilterStore {
     startDate: new Date(),
     endDate: new Date(),
   };
+  selectedWorkingType = WORKING_TYPES[0].value;
 
   constructor() {
     makeObservable(this, {
       selectedPeriod: observable,
       dateRange: observable,
+      selectedWorkingType: observable,
 
       setSelectedPeriod: action,
       setDateRange: action,
+      setSelectedWorkingType: action,
       handleDateChange: action,
       findMatchedPeriod: action,
     });
@@ -43,6 +46,10 @@ class FilterStore {
 
   setDateRange = (dateRange) => {
     this.dateRange = dateRange;
+  };
+
+  setSelectedWorkingType = (workingType) => {
+    this.selectedWorkingType = workingType;
   };
 
   handleDateChange = (newDateRange) => {

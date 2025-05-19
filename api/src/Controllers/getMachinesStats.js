@@ -2,16 +2,23 @@ const statsDao = require("../Dao/statsDao");
 
 const getMachinesStats = async (req, res) => {
   try {
-    if (!req.body || !req.body.startDate || !req.body.endDate) {
-      console.error("Missing start or end date");
+    if (!req.body || !req.body.dateRange || !req.body.workingType) {
+      console.error("Missing date range or working type");
 
-      res.status(400).json({ message: "Missing start or end date" });
+      res.status(400).json({ message: "Missing date range or working type" });
       return;
     }
 
-    const { startDate, endDate } = req.body;
+    const {
+      dateRange: { startDate, endDate },
+      workingType,
+    } = req.body;
 
-    const stats = await statsDao.getMachinesStats(startDate, endDate);
+    const stats = await statsDao.getMachinesStats(
+      startDate,
+      endDate,
+      workingType
+    );
 
     res.json(stats);
   } catch (error) {

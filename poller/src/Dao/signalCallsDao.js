@@ -1,13 +1,15 @@
 const db = require("../Database/connection");
 
 const signalCallsDao = {
-  add: (calls) => {
+  add: (calls, isWorkTime) => {
+    const secType = isWorkTime ? "shift_sec" : "day_sec";
+
     try {
       return db("signalCalls")
         .insert(calls)
         .onConflict(["signalId", "date"])
         .merge({
-          count: db.raw('"signalCalls"."count" + 3'),
+          [secType]: db.raw(`"signalCalls"."${secType}" + 3`),
         });
     } catch (error) {
       console.error("Error adding signal calls:", error);

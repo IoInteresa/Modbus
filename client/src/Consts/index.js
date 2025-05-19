@@ -26,11 +26,22 @@ const PERIODS = {
   },
 };
 
+const WORKING_TYPES = [
+  {
+    label: "Смена",
+    value: "shift",
+  },
+  {
+    label: "День",
+    value: "day",
+  },
+];
+
 const TIME_UNITS = {
   Секунды: 1,
   Минуты: 60,
   Часы: 3600,
-  Дни: 86400
+  Дни: 86400,
 };
 
-export { PERIODS, TIME_UNITS };
+export { PERIODS, WORKING_TYPES, TIME_UNITS };

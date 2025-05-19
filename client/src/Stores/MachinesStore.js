@@ -20,7 +20,7 @@ class MachinesStore {
     this.FilterStore = FilterStore;
 
     reaction(
-      () => this.FilterStore.dateRange,
+      () => [this.FilterStore.dateRange, this.FilterStore.selectedWorkingType],
       () => this.fetchMachines()
     );
 
@@ -33,9 +33,14 @@ class MachinesStore {
 
   fetchMachines = async () => {
     try {
-      const { dateRange } = this.FilterStore;
+      const { dateRange, selectedWorkingType } = this.FilterStore;
 
-      const machines = await getMachines(dateRange);
+      const body = {
+        dateRange,
+        workingType: selectedWorkingType,
+      };
+
+      const machines = await getMachines(body);
 
       this.setMachines(this.formatMachines(machines));
     } catch (error) {
